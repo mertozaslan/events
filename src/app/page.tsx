@@ -1,103 +1,205 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { setEvents, setLoading, setError } from '@/store/eventsSlice';
+import { getEvents, searchEvents, getEventsByCategory } from '@/services/eventService';
+import { getImagesForEvents } from '@/services/unsplashService';
+import { categoriesApi } from '@/services/apiService';
+import { LoadingSkeleton, Button, HeroSection, SearchSection, CategoryPills, EventsSection } from '@/components';
+import { 
+  faLaptopCode, 
+  faMusic, 
+  faBriefcase, 
+  faPalette, 
+  faHeartbeat, 
+  faUtensils
+} from '@fortawesome/free-solid-svg-icons';
+
+interface EventsState {
+  events: any[];
+  loading: boolean;
+  error: string | null;
+}
+
+export default function HomePage() {
+  const dispatch = useDispatch();
+  const { events, loading, error } = useSelector((state: RootState) => state.events as EventsState);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'date' | 'popularity' | 'price'>('date');
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await categoriesApi.getAll();
+        if (response.success) {
+          setCategories(response.data);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch categories, using fallback');
+        // Fallback categories
+        setCategories([
+          { id: '1', name: 'Teknoloji', icon: faLaptopCode, gradient: 'from-blue-500 to-cyan-500' },
+          { id: '2', name: 'Müzik', icon: faMusic, gradient: 'from-purple-500 to-pink-500' },
+          { id: '3', name: 'İş', icon: faBriefcase, gradient: 'from-green-500 to-emerald-500' },
+          { id: '4', name: 'Sanat', icon: faPalette, gradient: 'from-orange-500 to-red-500' },
+          { id: '5', name: 'Sağlık', icon: faHeartbeat, gradient: 'from-teal-500 to-green-500' },
+          { id: '6', name: 'Yemek', icon: faUtensils, gradient: 'from-yellow-500 to-orange-500' },
+        ]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Initial data fetch - Redux ile
+  useEffect(() => {
+    const fetchEvents = async () => {
+      dispatch(setLoading(true));
+      try {
+        const eventsData = await getEvents();
+        
+        // Unsplash'ten görselleri al
+        const categories = [...new Set(eventsData.map((event: any) => event.category))];
+        const images = await getImagesForEvents(categories);
+        
+        // Etkinliklere görselleri ekle
+        const eventsWithImages = eventsData.map((event: any) => ({
+          ...event,
+          image: images[event.category] || '',
+        }));
+        
+        dispatch(setEvents(eventsWithImages));
+      } catch (err) {
+        dispatch(setError('Etkinlikler yüklenirken bir hata oluştu'));
+      } finally {
+        dispatch(setLoading(false));
+      }
+    };
+
+    fetchEvents();
+  }, [dispatch]);
+
+  // Filter and sort events - Redux state'ini kullan
+  useEffect(() => {
+    const filterAndSortEvents = async () => {
+      if (!events.length) return;
+
+      let filtered = [...events];
+
+      // Apply search filter
+      if (searchTerm) {
+        const lowercaseQuery = searchTerm.toLowerCase();
+        filtered = filtered.filter((event: any) => 
+          event.title.toLowerCase().includes(lowercaseQuery) ||
+          event.location.toLowerCase().includes(lowercaseQuery) ||
+          event.description.toLowerCase().includes(lowercaseQuery)
+        );
+      }
+
+      // Apply category filter
+      if (selectedCategory) {
+        filtered = filtered.filter((event: any) => event.category === selectedCategory);
+      }
+
+      // Apply sorting
+      switch (sortBy) {
+        case 'date':
+          filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+          break;
+        case 'popularity':
+          filtered.sort((a, b) => b.attendees - a.attendees);
+          break;
+        case 'price':
+          filtered.sort((a, b) => a.price - b.price);
+          break;
+      }
+
+      setFilteredEvents(filtered);
+    };
+
+    filterAndSortEvents();
+  }, [events, searchTerm, selectedCategory, sortBy]);
+
+  if (loading) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <div className="min-h-screen">
+        {/* Hero Section Skeleton */}
+        <div className="relative h-[60vh] bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 overflow-hidden">
+          <div className="absolute inset-0 bg-black/30"></div>
+          <div className="relative max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
+            <div className="text-center animate-pulse">
+              <div className="h-16 bg-white/20 rounded-2xl mb-6 max-w-2xl mx-auto"></div>
+              <div className="h-8 bg-white/20 rounded-xl mb-8 max-w-xl mx-auto"></div>
+              <div className="flex justify-center space-x-4">
+                <div className="h-12 w-32 bg-white/20 rounded-xl"></div>
+                <div className="h-12 w-32 bg-white/20 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        
+        <div className="max-w-7xl mx-auto px-4 py-16">
+          <LoadingSkeleton />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50">
+        <div className="text-center bg-white rounded-3xl shadow-2xl p-16 max-w-lg mx-4 border border-red-100">
+          <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-8">
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">Bir şeyler ters gitti</h3>
+          <p className="text-red-600 text-lg mb-8 leading-relaxed">{error}</p>
+          <Button onClick={() => window.location.reload()} size="lg" className="shadow-lg">
+            🔄 Tekrar Dene
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      <HeroSection />
+      
+      <SearchSection 
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        categories={categories}
+      />
+
+      <CategoryPills 
+        categories={categories}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+
+      <EventsSection 
+        filteredEvents={filteredEvents}
+        searchTerm={searchTerm}
+        selectedCategory={selectedCategory}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+        setSearchTerm={setSearchTerm}
+        setSelectedCategory={setSelectedCategory}
+      />
     </div>
   );
 }
