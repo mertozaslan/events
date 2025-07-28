@@ -5,21 +5,19 @@ import { faBullseye, faUserPlus, faUserMinus, faCalendarAlt } from '@fortawesome
 import { Button } from '@/components';
 
 interface EventActionCardProps {
-  event: any;
   isAttending: boolean;
   isCancelled: boolean;
-  handleAttend: () => void;
-  handleCancel: () => void;
-  handleAddToCalendar: () => void;
+  onAttend: () => void;
+  onCancel: () => void;
+  onAddToCalendar: () => void;
 }
 
 export default function EventActionCard({
-  event,
   isAttending,
   isCancelled,
-  handleAttend,
-  handleCancel,
-  handleAddToCalendar
+  onAttend,
+  onCancel,
+  onAddToCalendar
 }: EventActionCardProps) {
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
@@ -31,7 +29,7 @@ export default function EventActionCard({
       <div className="space-y-4">
         {isAttending ? (
           <Button
-            onClick={handleCancel}
+            onClick={onCancel}
             variant="outline"
             className="w-full border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-300"
           >
@@ -39,14 +37,14 @@ export default function EventActionCard({
           </Button>
         ) : isCancelled ? (
           <Button
-            onClick={handleAttend}
+            onClick={onAttend}
             className="w-full bg-green-600 hover:bg-green-700 transition-all duration-300"
           >
             <FontAwesomeIcon icon={faUserPlus} className="mr-2" /> Tekrar Katıl
           </Button>
         ) : (
           <Button
-            onClick={handleAttend}
+            onClick={onAttend}
             className="w-full bg-blue-600 hover:bg-blue-700 transition-all duration-300"
           >
             <FontAwesomeIcon icon={faUserPlus} className="mr-2" /> Katılıyorum
@@ -54,7 +52,7 @@ export default function EventActionCard({
         )}
         
         <Button
-          onClick={handleAddToCalendar}
+          onClick={onAddToCalendar}
           variant="outline"
           className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
         >

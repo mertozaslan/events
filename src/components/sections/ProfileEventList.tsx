@@ -1,13 +1,35 @@
 'use client';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMapMarkerAlt, faStar, faUserPlus, faUserMinus, faBullseye, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import { faMapMarkerAlt, faStar, faBullseye, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
+interface EventWithReview extends Event {
+  userRating?: number;
+  userReview?: string;
+  userReviewId?: string;
+  attendedAt?: string;
+  averageRating?: number;
+  reviewCount?: number;
+}
+
 interface ProfileEventListProps {
-  filteredEvents: any[];
+  filteredEvents: (Event | EventWithReview)[];
   activeTab: 'upcoming' | 'past' | 'attended' | 'calendar';
-  setSelectedEvent: (event: any) => void;
+  setSelectedEvent: (event: EventWithReview | null) => void;
   setShowReviewModal: (show: boolean) => void;
   renderStars: (rating: number, interactive?: boolean, onChange?: (rating: number) => void) => React.ReactElement;
 }
@@ -26,7 +48,7 @@ export default function ProfileEventList({
           <div className="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
             <FontAwesomeIcon
               icon={activeTab === 'upcoming' ? faBullseye :
-                    activeTab === 'attended' ? faCalendarAlt : faUserMinus}
+                    activeTab === 'attended' ? faCalendarAlt : faCalendarAlt}
               className="text-2xl sm:text-4xl text-gray-400"
             />
           </div>
@@ -52,7 +74,7 @@ export default function ProfileEventList({
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:gap-6">
-          {filteredEvents.map((event: any) => (
+          {filteredEvents.map((event: Event | EventWithReview) => (
             <div key={event.id} className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 p-4 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
               <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8">
                 <div className="flex-shrink-0">
@@ -78,7 +100,7 @@ export default function ProfileEventList({
                   </div>
                   
                   {/* Rating and Review Section for Attended Events */}
-                  {activeTab === 'attended' && (
+                  {activeTab === 'attended' && 'userRating' in event && (
                     <div className="space-y-3">
                       {event.userRating ? (
                         <div className="flex items-center space-x-4">
@@ -98,33 +120,20 @@ export default function ProfileEventList({
                         <div className="flex items-center space-x-4">
                           <span className="text-sm font-medium text-gray-700">Henüz puanlamadınız</span>
                           <Button
-                            size="sm"
                             onClick={() => {
-                              setSelectedEvent(event);
+                              setSelectedEvent(event as EventWithReview);
                               setShowReviewModal(true);
                             }}
+                            size="sm"
                             className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
-                            <FontAwesomeIcon icon={faStar} className="mr-2" /> Puanla ve Yorum Yap
+                            <FontAwesomeIcon icon={faStar} className="mr-2" /> Puanla
                           </Button>
-                        </div>
-                      )}
-                      
-                      {event.userReview && (
-                        <div className="bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">Yorumunuz:</span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(event.attendedAt || event.date).toLocaleDateString('tr-TR')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">{event.userReview}</p>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
-              
               </div>
             </div>
           ))}

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThLarge, faList, faBullseye, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faThLarge, faList, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import EventCard from '../features/EventCard';
 import Button from '../ui/Button';
+import { Event } from '@/types';
 
 interface EventsSectionProps {
-  filteredEvents: any[];
+  filteredEvents: Event[];
   searchTerm: string;
   selectedCategory: string;
   viewMode: 'grid' | 'list';
@@ -25,7 +26,7 @@ export default function EventsSection({
   setSearchTerm,
   setSelectedCategory
 }: EventsSectionProps) {
-  const [displayedEvents, setDisplayedEvents] = useState<any[]>([]);
+  const [displayedEvents, setDisplayedEvents] = useState<Event[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const eventsPerPage = 6;
@@ -74,6 +75,7 @@ export default function EventsSection({
       return () => observer.disconnect();
     }
   }, [loading, hasMoreEvents, loadMoreEvents]);
+
   return (
     <div id="events-section" className="max-w-7xl mx-auto px-4 pb-24">
       {/* Section Header */}
@@ -90,100 +92,103 @@ export default function EventsSection({
               </span>
             )}
           </h2>
-                      <p className="text-gray-600 text-lg">
-              <span className="font-bold text-blue-600">{filteredEvents.length}</span> etkinlik bulundu
-              {displayedEvents.length < filteredEvents.length && (
-                <span className="text-sm text-gray-500 ml-2">
-                  ({displayedEvents.length} gösteriliyor)
-                </span>
-              )}
-            </p>
+          <p className="text-gray-600 text-lg">
+            <span className="font-bold text-blue-600">{filteredEvents.length}</span> etkinlik bulundu
+            {displayedEvents.length < filteredEvents.length && (
+              <span className="text-sm text-gray-500 ml-2">
+                ({displayedEvents.length} gösteriliyor)
+              </span>
+            )}
+          </p>
         </div>
-        
+
         {/* View Mode Toggle */}
-        <div className="hidden md:flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-2xl p-2 border border-gray-200">
-          <button
+        <div className="flex items-center space-x-2">
+          <Button
             onClick={() => setViewMode('grid')}
-            className={`p-3 rounded-xl transition-all duration-200 ${
-              viewMode === 'grid'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            variant={viewMode === 'grid' ? 'primary' : 'outline'}
+            size="sm"
+            className="flex items-center space-x-2"
           >
-            <FontAwesomeIcon icon={faThLarge} className="w-5 h-5" />
-          </button>
-          <button
+            <FontAwesomeIcon icon={faThLarge} className="w-4 h-4" />
+            <span>Grid</span>
+          </Button>
+          <Button
             onClick={() => setViewMode('list')}
-            className={`p-3 rounded-xl transition-all duration-200 ${
-              viewMode === 'list'
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
+            variant={viewMode === 'list' ? 'primary' : 'outline'}
+            size="sm"
+            className="flex items-center space-x-2"
           >
-            <FontAwesomeIcon icon={faList} className="w-5 h-5" />
-          </button>
+            <FontAwesomeIcon icon={faList} className="w-4 h-4" />
+            <span>Liste</span>
+          </Button>
         </div>
       </div>
 
-      {/* Events Grid/List */}
-      {displayedEvents.length === 0 ? (
-        <div className="text-center py-24">
-          <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-8">
-            <span className="text-4xl">🔍</span>
+      {/* Events Grid */}
+      {displayedEvents.length > 0 ? (
+        <>
+          <div className={`grid gap-6 ${
+            viewMode === 'grid' 
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
+              : 'grid-cols-1'
+          }`}>
+            {displayedEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
           </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            {searchTerm || selectedCategory ? 'Arama sonucu bulunamadı' : 'Etkinlik bulunamadı'}
-          </h3>
-          <p className="text-gray-600 mb-8 max-w-lg mx-auto text-lg leading-relaxed">
+
+          {/* Load More Button */}
+          {hasMoreEvents && (
+            <div className="text-center mt-12">
+              <Button
+                onClick={loadMoreEvents}
+                disabled={loading}
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                {loading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 mr-2 animate-spin" />
+                    Yükleniyor...
+                  </>
+                ) : (
+                  'Daha Fazla Göster'
+                )}
+              </Button>
+            </div>
+          )}
+
+          {/* Intersection Observer Target */}
+          {hasMoreEvents && (
+            <div ref={observerRef} className="h-10" />
+          )}
+        </>
+      ) : (
+        /* No Results State */
+        <div className="text-center py-16">
+          <div className="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
+            <FontAwesomeIcon icon={faList} className="w-12 h-12 text-gray-400" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">Etkinlik Bulunamadı</h3>
+          <p className="text-gray-600 mb-8 max-w-md mx-auto">
             {searchTerm || selectedCategory 
-              ? 'Farklı anahtar kelimeler deneyebilir veya filtreleri temizleyebilirsiniz.' 
-              : 'Yakında yeni etkinlikler eklenecek. Bizi takip etmeye devam edin!'
+              ? 'Arama kriterlerinize uygun etkinlik bulunamadı. Farklı anahtar kelimeler deneyebilir veya filtreleri temizleyebilirsiniz.'
+              : 'Şu anda gösterilecek etkinlik bulunmuyor.'
             }
           </p>
           {(searchTerm || selectedCategory) && (
-            <Button 
+            <Button
               onClick={() => {
                 setSearchTerm('');
                 setSelectedCategory('');
               }}
-              size="lg"
-              className="shadow-xl"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              🎯 Tüm Etkinlikleri Görüntüle
+              Filtreleri Temizle
             </Button>
           )}
         </div>
-              ) : (
-          <>
-            <div className={`${
-              viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr' 
-                : 'space-y-6'
-            }`}>
-              {displayedEvents.map((event: any) => (
-                <div key={event.id} className="h-full">
-                  <EventCard event={event} />
-                </div>
-              ))}
-            </div>
-
-
-            {/* Intersection Observer Target for Infinite Scroll */}
-            {hasMoreEvents && (
-              <div 
-                ref={observerRef}
-                className="h-20 flex items-center justify-center mt-8"
-              >
-                {loading && (
-                  <div className="flex items-center space-x-3 text-gray-600">
-                    <FontAwesomeIcon icon={faSpinner} className="w-5 h-5 animate-spin" />
-                    <span>Yükleniyor...</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
+      )}
     </div>
   );
 } 

@@ -3,8 +3,21 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
 interface EventStatsProps {
-  event: any;
+  event: Event;
 }
 
 export default function EventStats({ event }: EventStatsProps) {

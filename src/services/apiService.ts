@@ -52,14 +52,14 @@ class ApiClient {
     return this.request<T>(url.pathname + url.search);
   }
 
-  async post<T>(endpoint: string, data?: any): Promise<T> {
+  async post<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
+  async put<T>(endpoint: string, data?: Record<string, unknown>): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
@@ -76,12 +76,68 @@ class ApiClient {
 // API Client instance
 const apiClient = new ApiClient(API_BASE_URL);
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  gradient: string;
+  description: string;
+  eventCount: number;
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  bio: string;
+  location: string;
+  interests: string[];
+  stats: {
+    totalEvents: number;
+    attendedEvents: number;
+    cancelledEvents: number;
+    favoriteCategories: string[];
+    averageRating: number;
+    totalReviews: number;
+  };
+  preferences: {
+    notifications: boolean;
+    newsletter: boolean;
+    language: string;
+  };
+}
+
+interface EventReview {
+  id: string;
+  eventId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  userName: string;
+  userAvatar?: string;
+}
+
 // API Response types
 export interface ApiResponse<T> {
   success: boolean;
   data: T;
   message?: string;
-  meta?: any;
+  meta?: Record<string, unknown>;
 }
 
 export interface ApiError {
@@ -108,27 +164,27 @@ export const eventsApi = {
     if (params?.limit) searchParams.limit = params.limit.toString();
     if (params?.type) searchParams.type = params.type;
 
-    return apiClient.get<ApiResponse<any[]>>('/api/events', searchParams);
+    return apiClient.get<ApiResponse<Event[]>>('/api/events', searchParams);
   },
 
   // Get single event by ID
   getById: async (id: string) => {
-    return apiClient.get<ApiResponse<any>>(`/api/events/${id}`);
+    return apiClient.get<ApiResponse<Event>>(`/api/events/${id}`);
   },
 
   // Create new event
-  create: async (eventData: any) => {
-    return apiClient.post<ApiResponse<any>>('/api/events', eventData);
+  create: async (eventData: Omit<Event, 'id'>) => {
+    return apiClient.post<ApiResponse<Event>>('/api/events', eventData);
   },
 
   // Update event
-  update: async (id: string, eventData: any) => {
-    return apiClient.put<ApiResponse<any>>(`/api/events/${id}`, eventData);
+  update: async (id: string, eventData: Partial<Event>) => {
+    return apiClient.put<ApiResponse<Event>>(`/api/events/${id}`, eventData);
   },
 
   // Delete event
   delete: async (id: string) => {
-    return apiClient.delete<ApiResponse<any>>(`/api/events/${id}`);
+    return apiClient.delete<ApiResponse<{ message: string }>>(`/api/events/${id}`);
   },
 };
 
@@ -136,12 +192,12 @@ export const eventsApi = {
 export const profileApi = {
   // Get user profile
   get: async () => {
-    return apiClient.get<ApiResponse<any>>('/api/profile');
+    return apiClient.get<ApiResponse<UserProfile>>('/api/profile');
   },
 
   // Update user profile
-  update: async (profileData: any) => {
-    return apiClient.put<ApiResponse<any>>('/api/profile', profileData);
+  update: async (profileData: Partial<UserProfile>) => {
+    return apiClient.put<ApiResponse<UserProfile>>('/api/profile', profileData);
   },
 };
 
@@ -149,12 +205,25 @@ export const profileApi = {
 export const categoriesApi = {
   // Get all categories
   getAll: async () => {
-    return apiClient.get<ApiResponse<any[]>>('/api/categories');
+    return apiClient.get<ApiResponse<Category[]>>('/api/categories');
+  },
+};
+
+// Reviews API
+export const reviewsApi = {
+  // Get reviews for an event
+  getByEventId: async (eventId: string) => {
+    return apiClient.get<ApiResponse<EventReview[]>>(`/api/reviews?eventId=${eventId}`);
+  },
+
+  // Add a new review
+  create: async (reviewData: Omit<EventReview, 'id' | 'createdAt'>) => {
+    return apiClient.post<ApiResponse<EventReview>>('/api/reviews', reviewData);
   },
 };
 
 // Error handling utility
-export const handleApiError = (error: any): string => {
+export const handleApiError = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }

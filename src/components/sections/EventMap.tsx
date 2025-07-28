@@ -4,8 +4,21 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMap, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
 interface EventMapProps {
-  event: any;
+  event: Event;
 }
 
 export default function EventMap({ event }: EventMapProps) {

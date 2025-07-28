@@ -118,7 +118,7 @@ export const getPopularEvents = async (): Promise<Event[]> => {
   }
 };
 
-export const createEvent = async (eventData: Partial<Event>): Promise<Event> => {
+export const createEvent = async (eventData: Omit<Event, 'id'>): Promise<Event> => {
   try {
     const response: ApiResponse<Event> = await eventsApi.create(eventData);
     
@@ -128,8 +128,8 @@ export const createEvent = async (eventData: Partial<Event>): Promise<Event> => 
       throw new Error(response.message || 'Etkinlik oluşturulamadı');
     }
   } catch (error) {
-    console.error('Failed to create event:', error);
-    throw error;
+    console.warn('API failed:', error);
+    throw new Error('Etkinlik oluşturulamadı');
   }
 };
 
@@ -150,7 +150,7 @@ export const updateEvent = async (id: string, eventData: Partial<Event>): Promis
 
 export const deleteEvent = async (id: string): Promise<void> => {
   try {
-    const response: ApiResponse<any> = await eventsApi.delete(id);
+    const response: ApiResponse<{ message: string }> = await eventsApi.delete(id);
     
     if (!response.success) {
       throw new Error(response.message || 'Etkinlik silinemedi');

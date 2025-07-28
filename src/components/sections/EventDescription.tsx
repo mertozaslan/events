@@ -3,8 +3,21 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
 interface EventDescriptionProps {
-  event: any;
+  event: Event;
 }
 
 export default function EventDescription({ event }: EventDescriptionProps) {

@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { dummyCategories } from '@/lib/dummyData';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Add delay to simulate real API
     await new Promise(resolve => setTimeout(resolve, 200));

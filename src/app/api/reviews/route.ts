@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dummyEventReviews, getEventReviews, addEventReview } from '@/lib/dummyData';
+import { getEventReviews, addEventReview } from '@/lib/dummyData';
 
 // Simulated delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

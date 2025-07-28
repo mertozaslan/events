@@ -5,10 +5,37 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
+interface EventWithReview extends Event {
+  userRating?: number;
+  userReview?: string;
+  userReviewId?: string;
+  attendedAt?: string;
+  averageRating?: number;
+  reviewCount?: number;
+}
+
+interface UserEvents {
+  attending: string[];
+  cancelled: string[];
+}
+
 interface ProfileCalendarProps {
-  events: any[];
-  userEvents: any;
-  attendedEvents: any[];
+  events: Event[];
+  userEvents: UserEvents;
+  attendedEvents: EventWithReview[];
 }
 
 export default function ProfileCalendar({ events, userEvents, attendedEvents }: ProfileCalendarProps) {
@@ -67,7 +94,7 @@ export default function ProfileCalendar({ events, userEvents, attendedEvents }: 
             const currentYear = currentDate.getFullYear();
             
             // Bu gün için etkinlikleri bul
-            const dayEvents = events.filter((event: any) => {
+            const dayEvents = events.filter((event: Event) => {
               const eventDate = new Date(event.date);
               return eventDate.getDate() === dayNumber && 
                      eventDate.getMonth() === currentMonth && 
@@ -76,17 +103,17 @@ export default function ProfileCalendar({ events, userEvents, attendedEvents }: 
             });
 
             // Attended events'i de kontrol et
-            const attendedDayEvents = attendedEvents.filter((event: any) => {
+            const attendedDayEvents = attendedEvents.filter((event: EventWithReview) => {
               const eventDate = new Date(event.date);
               return eventDate.getDate() === dayNumber && 
                      eventDate.getMonth() === currentMonth && 
                      eventDate.getFullYear() === currentYear;
             });
 
-            const attendingEvents = dayEvents.filter((event: any) => 
+            const attendingEvents = dayEvents.filter((event: Event) => 
               userEvents.attending.includes(event.id)
             );
-            const cancelledEvents = dayEvents.filter((event: any) => 
+            const cancelledEvents = dayEvents.filter((event: Event) => 
               userEvents.cancelled.includes(event.id)
             );
             const attendedEventsForDay = attendedDayEvents;
@@ -97,64 +124,19 @@ export default function ProfileCalendar({ events, userEvents, attendedEvents }: 
                 
                 {/* Etkinlik göstergeleri */}
                 <div className="space-y-1">
-                  {attendingEvents.slice(0, 2).map((event: any, index: number) => (
-                    <div 
-                      key={`attending-${event.id}-${index}`}
-                      className="w-full bg-green-100 rounded sm:rounded-lg p-1 border border-green-200"
-                      title={`${event.title} - Katılınacak`}
-                    >
-                      <div className="text-xs text-green-800 font-medium truncate">
-                        {event.title}
-                      </div>
-                    </div>
+                  {attendingEvents.slice(0, 2).map((event: Event) => (
+                    <div key={event.id} className="w-full h-1 bg-green-500 rounded-full"></div>
                   ))}
-                  {cancelledEvents.slice(0, 2).map((event: any, index: number) => (
-                    <div 
-                      key={`cancelled-${event.id}-${index}`}
-                      className="w-full bg-red-100 rounded sm:rounded-lg p-1 border border-red-200"
-                      title={`${event.title} - İptal Edildi`}
-                    >
-                      <div className="text-xs text-red-800 font-medium truncate">
-                        {event.title}
-                      </div>
-                    </div>
+                  {cancelledEvents.slice(0, 2).map((event: Event) => (
+                    <div key={event.id} className="w-full h-1 bg-red-500 rounded-full"></div>
                   ))}
-                  {attendedEventsForDay.slice(0, 2).map((event: any, index: number) => (
-                    <div 
-                      key={`attended-${event.id}-${index}`}
-                      className="w-full bg-blue-100 rounded sm:rounded-lg p-1 border border-blue-200"
-                      title={`${event.title} - Katıldınız`}
-                    >
-                      <div className="text-xs text-blue-800 font-medium truncate">
-                        {event.title}
-                      </div>
-                    </div>
+                  {attendedEventsForDay.slice(0, 2).map((event: EventWithReview) => (
+                    <div key={event.id} className="w-full h-1 bg-blue-500 rounded-full"></div>
                   ))}
-                  {(attendingEvents.length + cancelledEvents.length + attendedEventsForDay.length) > 6 && (
-                    <div className="text-xs text-gray-500 text-center">
-                      +{(attendingEvents.length + cancelledEvents.length + attendedEventsForDay.length) - 6} daha
-                    </div>
-                  )}
                 </div>
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Calendar Legend */}
-      <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4 lg:space-x-6">
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 bg-green-100 border border-green-200 rounded"></div>
-          <span className="text-xs sm:text-sm font-medium text-gray-700">Planladıklarım</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 bg-blue-100 border border-blue-200 rounded"></div>
-          <span className="text-xs sm:text-sm font-medium text-gray-700">Katıldıklarım</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-3 h-3 sm:w-4 sm:h-4 bg-red-100 border border-red-200 rounded"></div>
-          <span className="text-xs sm:text-sm font-medium text-gray-700">İptal Edilenler</span>
         </div>
       </div>
     </div>

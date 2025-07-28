@@ -3,13 +3,43 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faCalendarAlt, faMapMarkerAlt, faDollarSign, faTag } from '@fortawesome/free-solid-svg-icons';
 
-interface EventDetailsCardProps {
-  event: any;
-  formatDate: (dateString: string) => string;
-  formatPrice: (price: number) => string;
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image?: string;
 }
 
-export default function EventDetailsCard({ event, formatDate, formatPrice }: EventDetailsCardProps) {
+interface EventDetailsCardProps {
+  event: Event;
+}
+
+export default function EventDetailsCard({ event }: EventDetailsCardProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY'
+    }).format(price);
+  };
+
   return (
     <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-gray-100 hover:shadow-2xl transition-all duration-300">
       <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center">

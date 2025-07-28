@@ -8,9 +8,10 @@ import {
   faMapMarkerAlt, 
   faEye 
 } from '@fortawesome/free-solid-svg-icons';
+import { Event } from '@/types';
 
 interface EventCardProps {
-  event: any;
+  event: Event;
 }
 
 export default function EventCard({ event }: EventCardProps) {
@@ -29,8 +30,6 @@ export default function EventCard({ event }: EventCardProps) {
   const formatPrice = (price: number) => {
     return price === 0 ? 'Ücretsiz' : `${price} ₺`;
   };
-
-
 
   const getCapacityColor = () => {
     const percentage = (event.attendees / event.capacity) * 100;

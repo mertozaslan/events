@@ -4,12 +4,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode } from '@fortawesome/free-solid-svg-icons';
 
 interface QRModalProps {
-  showQRModal: boolean;
-  setShowQRModal: (show: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-export default function QRModal({ showQRModal, setShowQRModal }: QRModalProps) {
-  if (!showQRModal) return null;
+export default function QRModal({ isOpen, onClose }: QRModalProps) {
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -20,7 +20,7 @@ export default function QRModal({ showQRModal, setShowQRModal }: QRModalProps) {
         </div>
         <p className="text-gray-600 mb-6">QR kodu tarayarak etkinlik bilgilerine hızlıca erişebilirsiniz.</p>
         <button
-          onClick={() => setShowQRModal(false)}
+          onClick={onClose}
           className="w-full p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300"
         >
           Kapat

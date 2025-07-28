@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { setEvents, setLoading, setError } from '@/store/eventsSlice';
-import { getEvents, searchEvents, getEventsByCategory } from '@/services/eventService';
+import { getEvents } from '@/services/eventService';
 import { getImagesForEvents } from '@/services/unsplashService';
 import { categoriesApi } from '@/services/apiService';
 import { LoadingSkeleton, Button, HeroSection, SearchSection, CategoryPills, EventsSection } from '@/components';
@@ -16,12 +16,7 @@ import {
   faHeartbeat, 
   faUtensils
 } from '@fortawesome/free-solid-svg-icons';
-
-interface EventsState {
-  events: any[];
-  loading: boolean;
-  error: string | null;
-}
+import { Event, ApiCategory, ComponentCategory, EventsState } from '@/types';
 
 export default function HomePage() {
   const dispatch = useDispatch();
@@ -30,8 +25,8 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'date' | 'popularity' | 'price'>('date');
-  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
+  const [categories, setCategories] = useState<ComponentCategory[]>([]);
 
   // Fetch categories from backend
   useEffect(() => {
@@ -39,9 +34,16 @@ export default function HomePage() {
       try {
         const response = await categoriesApi.getAll();
         if (response.success) {
-          setCategories(response.data);
+          // API'den gelen Category'leri ComponentCategory'ye dönüştür
+          const componentCategories: ComponentCategory[] = response.data.map((cat: ApiCategory) => ({
+            id: cat.id,
+            name: cat.name,
+            icon: cat.icon, // String olarak kalacak, component'te emoji olarak gösterilecek
+            gradient: cat.gradient,
+          }));
+          setCategories(componentCategories);
         }
-      } catch (error) {
+      } catch {
         console.warn('Failed to fetch categories, using fallback');
         // Fallback categories
         setCategories([
@@ -66,17 +68,17 @@ export default function HomePage() {
         const eventsData = await getEvents();
         
         // Unsplash'ten görselleri al
-        const categories = [...new Set(eventsData.map((event: any) => event.category))];
+        const categories = [...new Set(eventsData.map((event: Event) => event.category))];
         const images = await getImagesForEvents(categories);
         
         // Etkinliklere görselleri ekle
-        const eventsWithImages = eventsData.map((event: any) => ({
+        const eventsWithImages = eventsData.map((event: Event) => ({
           ...event,
           image: images[event.category] || '',
         }));
         
         dispatch(setEvents(eventsWithImages));
-      } catch (err) {
+      } catch {
         dispatch(setError('Etkinlikler yüklenirken bir hata oluştu'));
       } finally {
         dispatch(setLoading(false));
@@ -96,7 +98,7 @@ export default function HomePage() {
       // Apply search filter
       if (searchTerm) {
         const lowercaseQuery = searchTerm.toLowerCase();
-        filtered = filtered.filter((event: any) => 
+        filtered = filtered.filter((event: Event) => 
           event.title.toLowerCase().includes(lowercaseQuery) ||
           event.location.toLowerCase().includes(lowercaseQuery) ||
           event.description.toLowerCase().includes(lowercaseQuery)
@@ -105,7 +107,7 @@ export default function HomePage() {
 
       // Apply category filter
       if (selectedCategory) {
-        filtered = filtered.filter((event: any) => event.category === selectedCategory);
+        filtered = filtered.filter((event: Event) => event.category === selectedCategory);
       }
 
       // Apply sorting

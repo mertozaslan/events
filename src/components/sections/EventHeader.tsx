@@ -1,37 +1,77 @@
 'use client';
 
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShare, faQrcode, faCalendarAlt, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image?: string;
+}
+
 interface EventHeaderProps {
-  event: any;
+  event: Event;
   image: string;
-  setShowShareModal: (show: boolean) => void;
-  setShowQRModal: (show: boolean) => void;
-  formatDate: (dateString: string) => string;
-  formatPrice: (price: number) => string;
-  getCapacityColor: () => string;
-  getCapacityText: () => string;
+  onShare: () => void;
+  onQR: () => void;
 }
 
 export default function EventHeader({
   event,
   image,
-  setShowShareModal,
-  setShowQRModal,
-  formatDate,
-  formatPrice,
-  getCapacityColor,
-  getCapacityText
+  onShare,
+  onQR
 }: EventHeaderProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('tr-TR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY'
+    }).format(price);
+  };
+
+  const getCapacityColor = () => {
+    const percentage = (event.attendees / event.capacity) * 100;
+    if (percentage >= 90) return 'text-red-500 bg-red-100 border-red-200';
+    if (percentage >= 70) return 'text-orange-500 bg-orange-100 border-orange-200';
+    return 'text-green-500 bg-green-100 border-green-200';
+  };
+
+  const getCapacityText = () => {
+    const percentage = Math.round((event.attendees / event.capacity) * 100);
+    if (percentage >= 90) return 'Neredeyse Dolu';
+    if (percentage >= 70) return 'Hızla Doluyor';
+    return 'Yer Var';
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-2xl overflow-hidden mb-8 sm:mb-12 group">
       <div className="relative h-64 sm:h-80 md:h-96">
         {image ? (
-          <img
+          <Image
             src={image}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-700"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center">
@@ -45,13 +85,13 @@ export default function EventHeader({
         {/* Action Buttons */}
         <div className="absolute top-4 sm:top-6 right-4 sm:right-6 flex space-x-2 sm:space-x-3">
           <button
-            onClick={() => setShowShareModal(true)}
+            onClick={onShare}
             className="p-2 sm:p-3 rounded-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm transition-all duration-300"
           >
             <FontAwesomeIcon icon={faShare} className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
-            onClick={() => setShowQRModal(true)}
+            onClick={onQR}
             className="p-2 sm:p-3 rounded-full bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm transition-all duration-300"
           >
             <FontAwesomeIcon icon={faQrcode} className="w-4 h-4 sm:w-5 sm:h-5" />

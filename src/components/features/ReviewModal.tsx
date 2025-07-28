@@ -2,10 +2,23 @@
 
 import { Button } from '@/components';
 
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
 interface ReviewModalProps {
   showReviewModal: boolean;
   setShowReviewModal: (show: boolean) => void;
-  selectedEvent: any;
+  selectedEvent: Event | null;
   reviewRating: number;
   setReviewRating: (rating: number) => void;
   reviewComment: string;

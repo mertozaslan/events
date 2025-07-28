@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-import { getUserProfile, getUserStats } from '@/services/profileService';
+import { getUserProfile } from '@/services/profileService';
 import { getEvents } from '@/services/eventService';
 import { Button, LoadingSkeleton, ProfileSidebar, ProfileTabs, ProfileCalendar, ProfileEventList, ReviewModal } from '@/components';
 
@@ -14,6 +14,42 @@ interface UserEvents {
 
 interface EventsState {
   userEvents: UserEvents;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  bio: string;
+  location: string;
+  interests: string[];
+  stats: {
+    totalEvents: number;
+    attendedEvents: number;
+    cancelledEvents: number;
+    favoriteCategories: string[];
+    averageRating: number;
+    totalReviews: number;
+  };
+  preferences: {
+    notifications: boolean;
+    newsletter: boolean;
+    language: string;
+  };
 }
 
 interface EventWithReview {
@@ -37,8 +73,8 @@ interface EventWithReview {
 
 export default function ProfilePage() {
   const { userEvents } = useSelector((state: RootState) => state.events as EventsState);
-  const [profile, setProfile] = useState<any>(null);
-  const [events, setEvents] = useState<any[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
   const [attendedEvents, setAttendedEvents] = useState<EventWithReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +104,10 @@ export default function ProfilePage() {
               setAttendedEvents(data.data);
             }
           }
-        } catch (err) {
+        } catch {
           console.warn('Failed to fetch attended events');
         }
-      } catch (err) {
+      } catch {
         setError('Veriler yüklenirken bir hata oluştu');
       } finally {
         setLoading(false);
@@ -84,12 +120,12 @@ export default function ProfilePage() {
   const getFilteredEvents = () => {
     if (activeTab === 'upcoming') {
       // Planladıklarım - sadece katılınacak etkinlikler
-      return events.filter((event: any) => 
+      return events.filter((event: Event) => 
         userEvents.attending.includes(event.id)
       );
     } else if (activeTab === 'past') {
       // İptal Edilenler - sadece iptal edilen etkinlikler
-      return events.filter((event: any) => 
+      return events.filter((event: Event) => 
         userEvents.cancelled.includes(event.id)
       );
     } else if (activeTab === 'attended') {
@@ -110,7 +146,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({
           eventId: selectedEvent.id,
-          userId: profile.id,
+          userId: profile?.id,
           rating: reviewRating,
           comment: reviewComment,
         }),
@@ -131,8 +167,8 @@ export default function ProfilePage() {
         setReviewRating(5);
         setReviewComment('');
       }
-    } catch (error) {
-      console.error('Error adding review:', error);
+    } catch {
+      console.error('Failed to add review');
     }
   };
 

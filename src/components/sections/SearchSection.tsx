@@ -9,6 +9,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Button  from '../ui/Button';
 
+interface Category {
+  id: string;
+  name: string;
+  icon: string | unknown;
+  gradient: string;
+}
+
 interface SearchSectionProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
@@ -16,7 +23,7 @@ interface SearchSectionProps {
   setSelectedCategory: (category: string) => void;
   sortBy: 'date' | 'popularity' | 'price';
   setSortBy: (sort: 'date' | 'popularity' | 'price') => void;
-  categories: any[];
+  categories: Category[];
 }
 
 export default function SearchSection({
@@ -75,11 +82,11 @@ export default function SearchSection({
             <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">
               <FontAwesomeIcon icon={faThLarge} className="mr-2" /> Sırala
             </label>
-                          <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'date' | 'popularity' | 'price')}
-                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-gray-900 bg-white font-medium"
-              >
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'date' | 'popularity' | 'price')}
+              className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-300 text-gray-900 bg-white font-medium"
+            >
               <option value="date">Tarihe göre</option>
               <option value="popularity">Popülerliğe göre</option>
               <option value="price">Fiyata göre</option>

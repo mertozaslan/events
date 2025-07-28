@@ -1,9 +1,17 @@
 'use client';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
+
+interface Category {
+  id: string;
+  name: string;
+  icon: string | IconProp;
+  gradient: string;
+}
 
 interface CategoryPillsProps {
-  categories: any[];
+  categories: Category[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
 }
@@ -27,7 +35,13 @@ export default function CategoryPills({
             }`}
           >
             <span className="relative flex items-center space-x-2">
-              <span className="text-lg"><FontAwesomeIcon icon={category.icon} /></span>
+              <span className="text-lg">
+                {typeof category.icon === 'string' ? (
+                  <span>{category.icon}</span>
+                ) : (
+                  <FontAwesomeIcon icon={category.icon} />
+                )}
+              </span>
               <span>{category.name}</span>
             </span>
             {selectedCategory === category.name && (

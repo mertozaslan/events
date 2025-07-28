@@ -3,9 +3,10 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShare, faLink } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF, faTwitter as faTwitterBrand, faWhatsapp as faWhatsappBrand, faTelegram as faTelegramBrand } from '@fortawesome/free-brands-svg-icons';
+import { Event } from '@/types';
 
 interface EventShareCardProps {
-  event: any;
+  event: Event;
   handleShare: (platform: string) => void;
 }
 

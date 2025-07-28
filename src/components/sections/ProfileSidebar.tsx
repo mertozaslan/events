@@ -1,12 +1,60 @@
 'use client';
 
+import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  bio: string;
+  location: string;
+  interests: string[];
+  stats: {
+    totalEvents: number;
+    attendedEvents: number;
+    cancelledEvents: number;
+    favoriteCategories: string[];
+    averageRating: number;
+    totalReviews: number;
+  };
+  preferences: {
+    notifications: boolean;
+    newsletter: boolean;
+    language: string;
+  };
+}
+
+interface UserEvents {
+  attending: string[];
+  cancelled: string[];
+}
+
+interface EventWithReview {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  price: number;
+  attendees: number;
+  capacity: number;
+  image: string;
+  userRating?: number;
+  userReview?: string;
+  userReviewId?: string;
+  attendedAt?: string;
+  averageRating?: number;
+  reviewCount?: number;
+}
+
 interface ProfileSidebarProps {
-  profile: any;
-  userEvents: any;
-  attendedEvents: any[];
+  profile: UserProfile;
+  userEvents: UserEvents;
+  attendedEvents: EventWithReview[];
 }
 
 export default function ProfileSidebar({ profile, userEvents, attendedEvents }: ProfileSidebarProps) {
@@ -16,12 +64,13 @@ export default function ProfileSidebar({ profile, userEvents, attendedEvents }: 
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
             <div className="relative">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center relative overflow-hidden">
                 {profile.avatar ? (
-                  <img
+                  <Image
                     src={profile.avatar}
                     alt={profile.name}
-                    className="w-full h-full rounded-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
