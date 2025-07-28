@@ -53,7 +53,7 @@ export default function EventShareCard({ event, handleShare }: EventShareCardPro
       
       <button
         onClick={() => handleShare('copy')}
-        className="w-full mt-7 flex items-center justify-center space-x-2 p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300"
+        className="w-full mt-2 flex items-center justify-center space-x-2 p-3 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300"
       >
         <FontAwesomeIcon icon={faLink} className="w-4 h-4" />
         <span className="text-sm">Linki Kopyala</span>
